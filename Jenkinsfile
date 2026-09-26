@@ -47,7 +47,8 @@ pipeline {
                 script {
                     echo "Sending code and coverage reports to SonarQube..."
                     // We use host.docker.internal because SonarQube is on the Windows host, and Jenkins is inside a container
-                    sh 'mvn sonar:sonar -Dsonar.host.url=http://host.docker.internal:9000 -Dsonar.token=${SONAR_TOKEN}'
+                    // Using the fully qualified plugin name ensures Maven finds it without needing global settings.xml changes
+                    sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.host.url=http://host.docker.internal:9000 -Dsonar.token=${SONAR_TOKEN}'
                 }
             }
         }
