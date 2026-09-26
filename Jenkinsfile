@@ -9,29 +9,30 @@ pipeline {
          jdk 'JDK 17'
      }
 
+    environment {
+        // Connects Jenkins to the Windows Docker Desktop engine
+        DOCKER_HOST = 'tcp://host.docker.internal:2375'
+    }
+
     stages {
         stage('Checkout') {
             steps {
-                // Checks out the code from the Git repository
                 checkout scm
             }
         }
         
         stage('Build') {
             steps {
-                // Compiles the Java code
                 sh 'mvn clean compile'
             }
         }
         
         stage('Test') {
             steps {
-                // Runs JUnit tests
                 sh 'mvn test'
             }
             post {
                 always {
-                    // Publishes JUnit test results to the Jenkins UI
                     junit 'target/surefire-reports/*.xml'
                 }
             }
@@ -39,14 +40,12 @@ pipeline {
         
         stage('Package') {
             steps {
-                // Packages the compiled code into a JAR file, skipping tests since they ran in the previous stage
                 sh 'mvn package -DskipTests'
             }
         }
         
         stage('Docker Build') {
             steps {
-                // Builds a Docker image using the provided Dockerfile
                 script {
                     sh 'docker build -t java-demo-app:latest .'
                 }
@@ -55,15 +54,10 @@ pipeline {
         
         stage('Deploy') {
             steps {
-                // Simulates deployment by running the Docker container locally
-                // In a real environment, this might be deploying to Kubernetes or an external server
                 script {
                     sh '''
-                        # Stop and remove the old container if it exists
                         docker stop java-demo-container || true
                         docker rm java-demo-container || true
-                        
-                        # Run the new container in the background
                         docker run -d --name java-demo-container java-demo-app:latest
                     '''
                 }
