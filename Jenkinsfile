@@ -58,7 +58,7 @@ pipeline {
                     sh '''
                         docker stop java-demo-container || true
                         docker rm java-demo-container || true
-                        docker run -d --name java-demo-container java-demo-app:latest
+                        docker run -d -p 8081:8081 --name java-demo-container java-demo-app:latest
                     '''
                 }
             }

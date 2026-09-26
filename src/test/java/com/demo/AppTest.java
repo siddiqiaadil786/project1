@@ -8,6 +8,6 @@ public class AppTest {
     @Test
     public void testGetMessage() {
         App app = new App();
-        assertEquals("Hello, Jenkins Pipeline!", app.getMessage(), "Message should match expected output.");
+        assertEquals("Hello, Jenkins Pipeline Web Server!", app.getMessage(), "Message should match expected output.");
     }
 }
