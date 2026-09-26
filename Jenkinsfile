@@ -1,13 +1,5 @@
 pipeline {
-    // Defines that the pipeline can run on any available Jenkins agent
     agent any
-
-    // Ensure Maven and JDK are configured in your Jenkins Global Tool Configuration
-    // Update the names below to match your configured tool names if necessary.
-     tools {
-         maven 'Maven' 
-         jdk 'JDK 17'
-     }
 
     environment {
         // Connects Jenkins to the Windows Docker Desktop engine
@@ -21,15 +13,26 @@ pipeline {
             }
         }
         
+        stage('Dependency Tracker (Security Scan)') {
+            steps {
+                script {
+                    echo "Scanning dependencies for vulnerabilities using OWASP Dependency-Check..."
+                    // We use -s settings.xml to force Maven to use the Nexus repository
+                    sh 'mvn org.owasp:dependency-check-maven:check -s settings.xml'
+                }
+            }
+        }
+
         stage('Build') {
             steps {
-                sh 'mvn clean compile'
+                // Now compiling code and fetching dependencies through Nexus
+                sh 'mvn clean compile -s settings.xml'
             }
         }
         
         stage('Test') {
             steps {
-                sh 'mvn test'
+                sh 'mvn test -s settings.xml'
             }
             post {
                 always {
@@ -41,21 +44,19 @@ pipeline {
         stage('SonarQube Analysis') {
             environment {
                 // PASTE YOUR GENERATED SONAR TOKEN HERE
-                SONAR_TOKEN = 'squ_e35a67150d2c476b4816144776e1098c5ad4a860' 
+                SONAR_TOKEN = 'YOUR_SONAR_TOKEN_HERE' 
             }
             steps {
                 script {
                     echo "Sending code and coverage reports to SonarQube..."
-                    // We use host.docker.internal because SonarQube is on the Windows host, and Jenkins is inside a container
-                    // Using the fully qualified plugin name ensures Maven finds it without needing global settings.xml changes
-                    sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.host.url=http://host.docker.internal:9000 -Dsonar.login=${SONAR_TOKEN}'
+                    sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.host.url=http://host.docker.internal:9000 -Dsonar.login=${SONAR_TOKEN} -s settings.xml'
                 }
             }
         }
         
         stage('Package') {
             steps {
-                sh 'mvn package -DskipTests'
+                sh 'mvn package -DskipTests -s settings.xml'
             }
         }
         

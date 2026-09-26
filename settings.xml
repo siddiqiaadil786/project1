@@ -1,0 +1,15 @@
+<settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
+          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0
+                              http://maven.apache.org/xsd/settings-1.0.0.xsd">
+  <mirrors>
+    <!-- Route all Maven downloads through our local Docker Nexus server -->
+    <mirror>
+      <id>nexus-public</id>
+      <mirrorOf>*</mirrorOf>
+      <!-- Nexus uses 8081 inside the container, but we mapped it to 8082 on the host -->
+      <!-- We use host.docker.internal so the Jenkins container can reach the host machine's port 8082 -->
+      <url>http://host.docker.internal:8082/repository/maven-public/</url>
+    </mirror>
+  </mirrors>
+</settings>

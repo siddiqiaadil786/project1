@@ -15,6 +15,13 @@
     </properties>
 
     <dependencies>
+        <!-- Adding a new dependency to demonstrate Nexus caching and Dependency Tracking -->
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-lang3</artifactId>
+            <version>3.13.0</version>
+        </dependency>
+        
         <!-- JUnit 5 for testing -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
