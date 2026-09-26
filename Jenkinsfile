@@ -38,6 +38,20 @@ pipeline {
             }
         }
         
+        stage('SonarQube Analysis') {
+            environment {
+                // PASTE YOUR GENERATED SONAR TOKEN HERE
+                SONAR_TOKEN = 'YOUR_SONAR_TOKEN_HERE' 
+            }
+            steps {
+                script {
+                    echo "Sending code and coverage reports to SonarQube..."
+                    // We use host.docker.internal because SonarQube is on the Windows host, and Jenkins is inside a container
+                    sh 'mvn sonar:sonar -Dsonar.host.url=http://host.docker.internal:9000 -Dsonar.token=${SONAR_TOKEN}'
+                }
+            }
+        }
+        
         stage('Package') {
             steps {
                 sh 'mvn package -DskipTests'

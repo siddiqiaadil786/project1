@@ -48,6 +48,27 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.2.1</version>
             </plugin>
+            <!-- Jacoco plugin for Code Coverage (Used by SonarQube) -->
+            <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>0.8.11</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>report</id>
+                        <phase>test</phase>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            
             <!-- Shade plugin to build an executable JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
