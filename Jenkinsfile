@@ -23,7 +23,8 @@ pipeline {
                 script {
                     echo "Scanning dependencies for vulnerabilities using OWASP Dependency-Check..."
                     // We use -s settings.xml to force Maven to use the Nexus repository
-                    sh 'mvn org.owasp:dependency-check-maven:check -s settings.xml'
+                    // We use -DnvdApiEnabled=false to bypass the strict NIST API Key requirement (uses OSS Index instead)
+                    sh 'mvn org.owasp:dependency-check-maven:check -s settings.xml -DnvdApiEnabled=false'
                 }
             }
         }
