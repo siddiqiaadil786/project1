@@ -41,7 +41,7 @@ pipeline {
         stage('SonarQube Analysis') {
             environment {
                 // PASTE YOUR GENERATED SONAR TOKEN HERE
-                SONAR_TOKEN = 'YOUR_SONAR_TOKEN_HERE' 
+                SONAR_TOKEN = 'squ_e35a67150d2c476b4816144776e1098c5ad4a860' 
             }
             steps {
                 script {
