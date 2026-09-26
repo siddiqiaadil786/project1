@@ -21,10 +21,10 @@ pipeline {
         stage('Dependency Tracker (Security Scan)') {
             steps {
                 script {
-                    echo "Scanning dependencies for vulnerabilities using OWASP Dependency-Check..."
+                    echo "Scanning dependencies for vulnerabilities using Sonatype OSS Index..."
                     // We use -s settings.xml to force Maven to use the Nexus repository
-                    // We use -DnvdApiEnabled=false to bypass the strict NIST API Key requirement (uses OSS Index instead)
-                    sh 'mvn org.owasp:dependency-check-maven:check -s settings.xml -DnvdApiEnabled=false'
+                    // Note: OWASP is currently blocked by NIST API limits, so we use Sonatype's official OSS Index scanner instead!
+                    sh 'mvn org.sonatype.ossindex.maven:ossindex-maven-plugin:audit -s settings.xml'
                 }
             }
         }
