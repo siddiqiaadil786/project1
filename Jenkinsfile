@@ -4,11 +4,10 @@ pipeline {
 
     // Ensure Maven and JDK are configured in your Jenkins Global Tool Configuration
     // Update the names below to match your configured tool names if necessary.
-    tools {
-        // e.g., 'Maven 3.x' or 'M3' depending on your Jenkins setup
-        maven 'Maven' 
-        jdk 'JDK 17'
-    }
+    // tools {
+    //     maven 'Maven' 
+    //     jdk 'JDK 17'
+    // }
 
     stages {
         stage('Checkout') {
