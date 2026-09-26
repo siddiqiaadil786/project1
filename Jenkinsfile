@@ -1,6 +1,11 @@
 pipeline {
     agent any
 
+    tools {
+        maven 'Maven'
+        jdk 'JDK 17'
+    }
+
     environment {
         // Connects Jenkins to the Windows Docker Desktop engine
         DOCKER_HOST = 'tcp://host.docker.internal:2375'
