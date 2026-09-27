@@ -3,8 +3,6 @@ package com.demo;
 import com.sun.net.httpserver.HttpExchange;
 import com.sun.net.httpserver.HttpHandler;
 import com.sun.net.httpserver.HttpServer;
-import io.prometheus.client.exporter.HTTPServer;
-import io.prometheus.client.hotspot.DefaultExports;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -12,11 +10,6 @@ import java.net.InetSocketAddress;
 
 public class App {
     public static void main(String[] args) throws IOException {
-        // Start Prometheus JVM metrics exporter on port 8083
-        DefaultExports.initialize();
-        HTTPServer prometheusServer = new HTTPServer(8083);
-        System.out.println("Prometheus Metrics exporting on port 8083 (/metrics)");
-
         int port = 8081;
         HttpServer server = HttpServer.create(new InetSocketAddress(port), 0);
         
