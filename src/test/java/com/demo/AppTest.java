@@ -6,25 +6,24 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class AppTest {
 
     @Test
-    public void testGetScientificHtml() {
-        String html = App.getScientificHtml();
-        assertTrue(html.contains("Scientific Calculator"), "HTML should contain the scientific calculator title");
-        assertTrue(html.contains("href=\"/emicalculator\""), "HTML should contain link to EMI Calculator");
-        assertTrue(html.contains("href=\"/quiz\""), "HTML should contain link to Quiz");
-    }
-
-    @Test
-    public void testGetEmiHtml() {
-        String html = App.getEmiHtml();
-        assertTrue(html.contains("EMI Calculator"), "HTML should contain the EMI calculator title");
-        assertTrue(html.contains("href=\"/\""), "HTML should contain link to Scientific Calculator");
-        assertTrue(html.contains("href=\"/quiz\""), "HTML should contain link to Quiz");
-    }
-
-    @Test
-    public void testGetQuizHtml() {
-        String html = App.getQuizHtml();
-        assertTrue(html.contains("Kids Quiz"), "HTML should contain the Quiz title");
-        assertTrue(html.contains("submitQuiz()"), "HTML should contain the submit logic");
+    public void testGetAppHtml() {
+        String html = App.getAppHtml();
+        
+        // Assert the core UI structure exists
+        assertTrue(html.contains("Samiti Management"), "HTML should contain the main Samiti Management title");
+        
+        // Assert login fields exist
+        assertTrue(html.contains("Mobile No:"), "HTML should contain Mobile No login field");
+        assertTrue(html.contains("Password:"), "HTML should contain Password login field");
+        
+        // Assert ledger columns exist
+        assertTrue(html.contains("Kist No"), "HTML should contain Kist No column");
+        assertTrue(html.contains("Total Jama (Till Now)"), "HTML should contain Total Jama column");
+        assertTrue(html.contains("Advance Given"), "HTML should contain Advance column");
+        assertTrue(html.contains("Total Bakaya"), "HTML should contain Bakaya column");
+        
+        // Assert bottom summary text exists
+        assertTrue(html.contains("Loans Issued This Month"), "HTML should contain bottom summary for loans issued");
+        assertTrue(html.contains("Other Funds (Donations)"), "HTML should contain other funds tracking");
     }
 }
