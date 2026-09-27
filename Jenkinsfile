@@ -23,8 +23,8 @@ pipeline {
                 script {
                     echo "Scanning dependencies for vulnerabilities using Sonatype OSS Index..."
                     // We use -s settings.xml to force Maven to use the Nexus repository
-                    // Note: OWASP is currently blocked by NIST API limits, so we use Sonatype's official OSS Index scanner instead!
-                    sh 'mvn org.sonatype.ossindex.maven:ossindex-maven-plugin:audit -s settings.xml'
+                    // We use -U to force Maven to ignore its cached failures and try downloading from Nexus again
+                    sh 'mvn org.sonatype.ossindex.maven:ossindex-maven-plugin:audit -s settings.xml -U'
                 }
             }
         }
@@ -32,13 +32,13 @@ pipeline {
         stage('Build') {
             steps {
                 // Now compiling code and fetching dependencies through Nexus
-                sh 'mvn clean compile -s settings.xml'
+                sh 'mvn clean compile -s settings.xml -U'
             }
         }
         
         stage('Test') {
             steps {
-                sh 'mvn test -s settings.xml'
+                sh 'mvn test -s settings.xml -U'
             }
             post {
                 always {
@@ -55,14 +55,14 @@ pipeline {
             steps {
                 script {
                     echo "Sending code and coverage reports to SonarQube..."
-                    sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.host.url=http://host.docker.internal:9000 -Dsonar.login=${SONAR_TOKEN} -s settings.xml'
+                    sh 'mvn org.sonarsource.scanner.maven:sonar-maven-plugin:sonar -Dsonar.host.url=http://host.docker.internal:9000 -Dsonar.login=${SONAR_TOKEN} -s settings.xml -U'
                 }
             }
         }
         
         stage('Package') {
             steps {
-                sh 'mvn package -DskipTests -s settings.xml'
+                sh 'mvn package -DskipTests -s settings.xml -U'
             }
         }
         
