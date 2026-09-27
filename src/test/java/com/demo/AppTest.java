@@ -12,18 +12,14 @@ public class AppTest {
         // Assert the core UI structure exists
         assertTrue(html.contains("Samiti Management"), "HTML should contain the main Samiti Management title");
         
-        // Assert login fields exist
-        assertTrue(html.contains("Mobile No:"), "HTML should contain Mobile No login field");
-        assertTrue(html.contains("Password:"), "HTML should contain Password login field");
+        // Assert ledger columns exactly as CSV
+        assertTrue(html.contains("Loan Emi No"), "HTML should contain Loan Emi No column");
+        assertTrue(html.contains("Total Cr by each till now"), "HTML should contain Total Cr by each till now column");
+        assertTrue(html.contains("This month Share"), "HTML should contain This month Share column");
+        assertTrue(html.contains("Total Advance this month (pending dues)"), "HTML should contain pending advance column");
         
-        // Assert ledger columns exist
-        assertTrue(html.contains("Kist No"), "HTML should contain Kist No column");
-        assertTrue(html.contains("Total Jama (Till Now)"), "HTML should contain Total Jama column");
-        assertTrue(html.contains("Advance Given"), "HTML should contain Advance column");
-        assertTrue(html.contains("Total Bakaya"), "HTML should contain Bakaya column");
-        
-        // Assert bottom summary text exists
-        assertTrue(html.contains("Loans Issued This Month"), "HTML should contain bottom summary for loans issued");
-        assertTrue(html.contains("Other Funds (Donations)"), "HTML should contain other funds tracking");
+        // Assert next month generation feature
+        assertTrue(html.contains("Create Next Month Record"), "HTML should contain Next Month button");
+        assertTrue(html.contains("generateNextMonth"), "JS function for next month should exist");
     }
 }

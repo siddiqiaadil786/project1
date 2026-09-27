@@ -43,12 +43,13 @@ public class App {
     <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
     <style>
         body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-        .table th { font-size: 0.85rem; vertical-align: middle; }
-        .table td { font-size: 0.9rem; vertical-align: middle; }
+        .table th { font-size: 0.75rem; vertical-align: middle; padding: 0.5rem; }
+        .table td { font-size: 0.85rem; vertical-align: middle; padding: 0.5rem; }
+        .summary-card h6 { margin-bottom: 0.2rem; }
     </style>
 </head>
 <body>
-    <div id="app" class="container-fluid py-4">
+    <div id="app" class="container-fluid py-3">
         
         <!-- Login Screen -->
         <div v-if="!user" class="row justify-content-center align-items-center" style="min-height: 80vh;">
@@ -61,19 +62,13 @@ public class App {
                     <div class="card-body p-4">
                         <div class="mb-3">
                             <label class="form-label fw-bold">Mobile No:</label>
-                            <input v-model="loginData.mobile" class="form-control" placeholder="Enter Mobile No">
+                            <input v-model="loginData.mobile" class="form-control" placeholder="Enter Mobile No (admin)">
                         </div>
                         <div class="mb-4">
                             <label class="form-label fw-bold">Password:</label>
-                            <input v-model="loginData.password" type="password" class="form-control" placeholder="Enter Password" @keyup.enter="login">
+                            <input v-model="loginData.password" type="password" class="form-control" placeholder="Enter Password (admin123)" @keyup.enter="login">
                         </div>
                         <button @click="login" class="btn btn-primary w-100 fw-bold">LOGIN</button>
-                        
-                        <div class="mt-4 alert alert-secondary text-center small mb-0">
-                            <strong>Demo Accounts:</strong><br>
-                            Admin: <code>admin</code> / <code>admin123</code><br>
-                            User: <code>9876543210</code> / <code>user123</code>
-                        </div>
                     </div>
                 </div>
             </div>
@@ -82,9 +77,14 @@ public class App {
         <!-- Dashboard / Main Interface -->
         <div v-else>
             <!-- Header -->
-            <div class="d-flex justify-content-between align-items-center mb-4 bg-white p-3 rounded shadow-sm border">
+            <div class="d-flex justify-content-between align-items-center mb-3 bg-white p-3 rounded shadow-sm border border-secondary border-opacity-25">
                 <div>
-                    <h2 class="mb-0 text-primary fw-bold">Samiti Management <span class="badge bg-secondary fs-6">Meeting #133</span></h2>
+                    <h3 class="mb-0 text-primary fw-bold">Samiti Management</h3>
+                    <div class="text-muted fw-bold mt-1">
+                        <span class="me-3">Month: <span class="text-dark">{{ meetingMonth }}</span></span>
+                        <span class="me-3">Date: <span class="text-dark">{{ meetingDate }}</span></span>
+                        <span>Samiti No. <span class="badge bg-danger fs-6">{{ meetingNo }}</span></span>
+                    </div>
                 </div>
                 <div class="d-flex align-items-center">
                     <span class="me-4 fw-bold text-muted">Profile: {{ user.name }} ({{ user.role.toUpperCase() }})</span>
@@ -92,67 +92,62 @@ public class App {
                 </div>
             </div>
 
-            <!-- User Specific Profile Summary -->
-            <div v-if="user.role === 'user'" class="alert alert-info shadow-sm mb-4 border-info">
-                <h4 class="alert-heading fw-bold">My Account Status (As of Last Meeting)</h4>
-                <hr>
-                <div class="row">
-                    <div class="col-md-3"><strong>Total Jama Till Now:</strong> ₹39,600</div>
-                    <div class="col-md-3"><strong>Active Loan:</strong> ₹1,200 (Issued 2 months ago)</div>
-                    <div class="col-md-3"><strong>Current EMI:</strong> ₹400/mo</div>
-                    <div class="col-md-3"><strong>Pending (Bakaya):</strong> ₹0</div>
-                </div>
-            </div>
-
             <!-- Main Ledger -->
-            <div class="card shadow-sm mb-4 border-0">
-                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-3">
-                    <h5 class="mb-0">Current Meeting Collection & Distribution Sheet</h5>
+            <div class="card shadow-sm mb-3 border-0">
+                <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-2">
+                    <h5 class="mb-0">Collection & Distribution Sheet</h5>
                     <div v-if="user.role === 'admin'">
-                        <button class="btn btn-sm btn-light text-dark fw-bold me-2">+ Add Member Entry</button>
-                        <button class="btn btn-sm btn-warning fw-bold">Upload Last 130 Meetings Data</button>
+                        <button @click="generateNextMonth" class="btn btn-sm btn-warning fw-bold text-dark me-2">Create Next Month Record ➡️</button>
                     </div>
                 </div>
                 <div class="card-body table-responsive p-0">
                     <table class="table table-hover table-bordered text-center mb-0">
                         <thead class="table-secondary">
                             <tr>
-                                <th>Sr No</th>
+                                <th>Sr</th>
                                 <th>Name</th>
-                                <th>Kist No</th>
+                                <th>Loan Emi No</th>
                                 <th>Loan Issue Date</th>
                                 <th>Loan Amount</th>
-                                <th>Total Jama (Till Now)</th>
-                                <th>Share / Monthly Jama</th>
-                                <th>EMI (Kist)</th>
-                                <th>Last Mth Advance</th>
-                                <th>Total Collect This Month</th>
-                                <th>Total Bakaya</th>
-                                <th>Advance Given</th>
-                                <th>Status</th>
+                                <th>Total Cr by each till now</th>
+                                <th>This month Share</th>
+                                <th>Emi amount</th>
+                                <th>Last month Advance</th>
+                                <th>Total Cr this month</th>
+                                <th>Status received</th>
+                                <th>This month not received (goes into advance)</th>
+                                <th>Total Advance this month (pending dues)</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr v-for="row in ledger" :key="row.id">
                                 <td>{{ row.srNo }}</td>
-                                <td class="fw-bold">{{ row.name }}</td>
-                                <td>{{ row.kistNo }}</td>
-                                <td>{{ row.loanDate }}</td>
-                                <td><span v-if="row.loanAmount > 0" class="text-danger fw-bold">₹{{ row.loanAmount }}</span><span v-else>-</span></td>
-                                <td>₹{{ row.totalJama }}</td>
-                                <td>₹{{ row.monthlyJama }}</td>
-                                <td><span v-if="row.emi > 0" class="text-primary fw-bold">₹{{ row.emi }}</span><span v-else>-</span></td>
-                                <td><span v-if="row.lastAdvance > 0" class="text-success">₹{{ row.lastAdvance }}</span><span v-else>-</span></td>
-                                <td class="fw-bold bg-light">₹{{ row.totalCollect }}</td>
-                                <td><span v-if="row.bakaya > 0" class="text-danger fw-bold">₹{{ row.bakaya }}</span><span v-else class="text-muted">₹0</span></td>
-                                <td><span v-if="row.advanceGiven > 0" class="text-success fw-bold">₹{{ row.advanceGiven }}</span><span v-else>-</span></td>
-                                <td><span :class="row.status === 'Online' ? 'badge bg-success' : 'badge bg-warning text-dark'">{{ row.status }}</span></td>
+                                <td class="fw-bold text-start text-nowrap">{{ row.name }}</td>
+                                <td>{{ row.loanEmiNo }}</td>
+                                <td>{{ row.loanIssueDate }}</td>
+                                <td><span v-if="row.loanAmount > 0" class="text-danger fw-bold">{{ row.loanAmount }}</span></td>
+                                <td>{{ row.totalCrTillNow }}</td>
+                                <td>{{ row.thisMonthShare }}</td>
+                                <td><span v-if="row.emiAmount > 0" class="text-primary fw-bold">{{ row.emiAmount }}</span><span v-else-if="row.emiAmount==='N/A'">N/A</span></td>
+                                <td><span v-if="row.lastMonthAdvance > 0" class="text-success">{{ row.lastMonthAdvance }}<br><small v-if="row.lastMonthAdvanceNote" class="text-danger">({{row.lastMonthAdvanceNote}})</small></span></td>
+                                <td class="fw-bold bg-light text-dark fs-6">{{ row.totalCrThisMonth }}</td>
+                                <td>
+                                    <span v-if="row.status === 'online'" class="badge bg-success">Online</span>
+                                    <span v-else-if="row.status === 'offline'" class="badge bg-primary">Offline</span>
+                                    <span v-else class="badge bg-secondary">{{ row.status }}</span>
+                                </td>
+                                <td><span v-if="row.notReceivedThisMonth > 0" class="text-danger fw-bold">{{ row.notReceivedThisMonth }}</span></td>
+                                <td><span v-if="row.totalAdvanceThisMonth > 0" class="text-danger fw-bold">{{ row.totalAdvanceThisMonth }}</span></td>
                             </tr>
                         </tbody>
-                        <tfoot class="table-light fw-bold">
+                        <tfoot class="table-dark fw-bold">
                             <tr>
-                                <td colspan="9" class="text-end">Total Collection:</td>
-                                <td class="text-primary fs-5">₹4,300</td>
+                                <td colspan="5" class="text-end">Total:</td>
+                                <td class="text-warning">{{ totalCrTillNowSum }}</td>
+                                <td></td>
+                                <td></td>
+                                <td></td>
+                                <td class="text-warning fs-5">{{ totalCollectSum }}</td>
                                 <td colspan="3"></td>
                             </tr>
                         </tfoot>
@@ -163,26 +158,23 @@ public class App {
             <!-- Bottom Summary -->
             <div class="row">
                 <div class="col-md-12">
-                    <div class="card shadow-sm border-0 border-start border-4 border-primary">
-                        <div class="card-body bg-light">
-                            <h5 class="fw-bold text-primary mb-3">Meeting Summary & Distribution</h5>
+                    <div class="card shadow-sm border-0 border-start border-4 border-warning summary-card">
+                        <div class="card-body bg-light py-2">
+                            <h6 class="fw-bold text-primary mb-2">Meeting Notes & Summary</h6>
                             <div class="row">
-                                <div class="col-md-3">
-                                    <p class="mb-1 text-muted">Loans Issued This Month</p>
-                                    <h6 class="fw-bold">Person B (₹1200)</h6>
-                                    <h6 class="fw-bold">Person C (₹1200)</h6>
+                                <div class="col-md-5 border-end">
+                                    <p class="mb-1 text-muted fw-bold">Note 1: Loan Issued This Month</p>
+                                    <h6>{{ summary.loanIssued }}</h6>
                                 </div>
-                                <div class="col-md-3">
-                                    <p class="mb-1 text-muted">Advances Given To</p>
-                                    <h6 class="fw-bold">Person A (₹200)</h6>
-                                </div>
-                                <div class="col-md-3">
-                                    <p class="mb-1 text-muted">Old Advances Recovered</p>
-                                    <h6 class="fw-bold">₹300 (From Person D & E)</h6>
-                                </div>
-                                <div class="col-md-3">
-                                    <p class="mb-1 text-muted">Other Funds (Donations)</p>
-                                    <h6 class="fw-bold text-success">₹150 (From Person B)</h6>
+                                <div class="col-md-7">
+                                    <p class="mb-1 text-muted fw-bold">Note 2: Advance Given</p>
+                                    <div class="row">
+                                        <div class="col-md-6" v-for="adv in summary.advances">
+                                            <h6>{{ adv.name }}: <span class="text-danger">₹{{ adv.amount }}</span></h6>
+                                        </div>
+                                    </div>
+                                    <hr class="my-1">
+                                    <h6 class="text-end fw-bold">Total Advance Given: ₹{{ summary.totalAdvance }}</h6>
                                 </div>
                             </div>
                         </div>
@@ -201,26 +193,105 @@ public class App {
                     user: null,
                     loginData: { mobile: 'admin', password: 'admin123' },
                     
-                    // Complex example data reflecting your exact scenario
+                    meetingNo: 148,
+                    meetingMonth: 'Sep 2026',
+                    meetingDate: '15/09/2026',
+
                     ledger: [
-                        { id:1, srNo:1, name:'Person A', kistNo:133, loanDate:'-', loanAmount:0, totalJama:39600, monthlyJama:300, emi:0, lastAdvance:0, totalCollect:300, bakaya:0, advanceGiven:200, status:'Online' },
-                        { id:2, srNo:2, name:'Person B', kistNo:133, loanDate:'2026-09-27', loanAmount:1200, totalJama:39600, monthlyJama:300, emi:0, lastAdvance:0, totalCollect:450, bakaya:0, advanceGiven:0, status:'Cash' },
-                        { id:3, srNo:3, name:'Person C', kistNo:133, loanDate:'2026-09-27', loanAmount:1200, totalJama:39600, monthlyJama:300, emi:0, lastAdvance:0, totalCollect:300, bakaya:0, advanceGiven:0, status:'Online' },
-                        { id:4, srNo:4, name:'Person D (Old Loan)', kistNo:133, loanDate:'2026-07-15', loanAmount:0, totalJama:39600, monthlyJama:300, emi:400, lastAdvance:200, totalCollect:900, bakaya:0, advanceGiven:0, status:'Online' },
-                        { id:5, srNo:5, name:'Person E (Missed Last)', kistNo:133, loanDate:'-', loanAmount:0, totalJama:39300, monthlyJama:300, emi:0, lastAdvance:0, totalCollect:600, bakaya:300, advanceGiven:0, status:'Cash' },
-                        { id:6, srNo:6, name:'Person F (New Joinee)', kistNo:1, loanDate:'-', loanAmount:0, totalJama:0, monthlyJama:300, emi:0, lastAdvance:0, totalCollect:1500, bakaya:0, advanceGiven:0, status:'Online' } // Paid past dues 4 months (4*300) + 300 current
-                    ]
+                        { id:1, srNo:1, name:'User 1', loanEmiNo:'3', loanIssueDate:'2026-06-12', loanAmount:80000, totalCrTillNow:35000, thisMonthShare:300, emiAmount:3700, lastMonthAdvance:0, totalCrThisMonth:4000, status:'online', notReceivedThisMonth:0, totalAdvanceThisMonth:0 },
+                        { id:2, srNo:2, name:'User 2', loanEmiNo:'2', loanIssueDate:'2026-07-12', loanAmount:80000, totalCrTillNow:35000, thisMonthShare:300, emiAmount:3700, lastMonthAdvance:5000, totalCrThisMonth:9000, status:'offline', notReceivedThisMonth:0, totalAdvanceThisMonth:0 },
+                        { id:3, srNo:3, name:'User 3', loanEmiNo:'1', loanIssueDate:'2026-08-12', loanAmount:80000, totalCrTillNow:35000, thisMonthShare:300, emiAmount:3700, lastMonthAdvance:0, totalCrThisMonth:4000, status:'online', notReceivedThisMonth:0, totalAdvanceThisMonth:0 },
+                        { id:4, srNo:4, name:'User 4', loanEmiNo:'N/A', loanIssueDate:'2026-09-15', loanAmount:80000, totalCrTillNow:35000, thisMonthShare:300, emiAmount:'N/A', lastMonthAdvance:0, totalCrThisMonth:300, status:'online', notReceivedThisMonth:0, totalAdvanceThisMonth:0 },
+                        { id:5, srNo:5, name:'User 5', loanEmiNo:'N/A', loanIssueDate:'', loanAmount:0, totalCrTillNow:35000, thisMonthShare:300, emiAmount:'N/A', lastMonthAdvance:0, totalCrThisMonth:300, status:'online', notReceivedThisMonth:0, totalAdvanceThisMonth:0 },
+                        { id:6, srNo:6, name:'User 6', loanEmiNo:'20', loanIssueDate:'2025-01-12', loanAmount:60000, totalCrTillNow:35000, thisMonthShare:300, emiAmount:3000, lastMonthAdvance:0, totalCrThisMonth:3300, status:'online', notReceivedThisMonth:0, totalAdvanceThisMonth:0 },
+                        { id:7, srNo:7, name:'User 7', loanEmiNo:'19', loanIssueDate:'2025-02-12', loanAmount:60000, totalCrTillNow:35000, thisMonthShare:300, emiAmount:3000, lastMonthAdvance:0, totalCrThisMonth:3300, status:'online', notReceivedThisMonth:0, totalAdvanceThisMonth:0 },
+                        { id:8, srNo:8, name:'User 8', loanEmiNo:'18', loanIssueDate:'2025-03-12', loanAmount:60000, totalCrTillNow:35000, thisMonthShare:300, emiAmount:3000, lastMonthAdvance:5400, totalCrThisMonth:8700, status:'online', notReceivedThisMonth:0, totalAdvanceThisMonth:0 },
+                        { id:9, srNo:9, name:'User 9', loanEmiNo:'17', loanIssueDate:'2025-04-12', loanAmount:60000, totalCrTillNow:35000, thisMonthShare:300, emiAmount:3000, lastMonthAdvance:5000, totalCrThisMonth:8300, status:'online', notReceivedThisMonth:0, totalAdvanceThisMonth:0 },
+                        { id:10, srNo:10, name:'User 10', loanEmiNo:'16', loanIssueDate:'2025-05-12', loanAmount:60000, totalCrTillNow:35000, thisMonthShare:300, emiAmount:3000, lastMonthAdvance:0, totalCrThisMonth:3300, status:'online', notReceivedThisMonth:0, totalAdvanceThisMonth:0 },
+                        { id:11, srNo:11, name:'User 11', loanEmiNo:'15', loanIssueDate:'2025-06-12', loanAmount:60000, totalCrTillNow:35000, thisMonthShare:300, emiAmount:3000, lastMonthAdvance:13300, totalCrThisMonth:16600, status:'online', notReceivedThisMonth:0, totalAdvanceThisMonth:0 },
+                        { id:12, srNo:12, name:'User 12', loanEmiNo:'14', loanIssueDate:'2025-07-12', loanAmount:60000, totalCrTillNow:35000, thisMonthShare:300, emiAmount:3000, lastMonthAdvance:0, totalCrThisMonth:3300, status:'online', notReceivedThisMonth:0, totalAdvanceThisMonth:0 },
+                        { id:13, srNo:13, name:'User 13', loanEmiNo:'13', loanIssueDate:'2025-08-12', loanAmount:60000, totalCrTillNow:35000, thisMonthShare:300, emiAmount:3000, lastMonthAdvance:0, totalCrThisMonth:3300, status:'online', notReceivedThisMonth:0, totalAdvanceThisMonth:0 },
+                        { id:14, srNo:14, name:'User 14', loanEmiNo:'12', loanIssueDate:'2025-09-12', loanAmount:60000, totalCrTillNow:35000, thisMonthShare:300, emiAmount:3000, lastMonthAdvance:10000, totalCrThisMonth:13300, status:'online', notReceivedThisMonth:0, totalAdvanceThisMonth:0 },
+                        { id:15, srNo:15, name:'User 15', loanEmiNo:'11', loanIssueDate:'2025-10-12', loanAmount:60000, totalCrTillNow:35000, thisMonthShare:300, emiAmount:3000, lastMonthAdvance:0, totalCrThisMonth:3300, status:'online', notReceivedThisMonth:0, totalAdvanceThisMonth:0 },
+                        { id:16, srNo:16, name:'User 16', loanEmiNo:'10', loanIssueDate:'2025-11-12', loanAmount:60000, totalCrTillNow:35000, thisMonthShare:300, emiAmount:3000, lastMonthAdvance:15000, lastMonthAdvanceNote: 'not received', totalCrThisMonth:3300, status:'online', notReceivedThisMonth:15000, totalAdvanceThisMonth:15000 },
+                        { id:17, srNo:17, name:'User 17', loanEmiNo:'9', loanIssueDate:'2025-12-12', loanAmount:60000, totalCrTillNow:35000, thisMonthShare:300, emiAmount:3000, lastMonthAdvance:0, totalCrThisMonth:3300, status:'online', notReceivedThisMonth:0, totalAdvanceThisMonth:0 },
+                        { id:18, srNo:18, name:'User 18', loanEmiNo:'8', loanIssueDate:'2026-01-12', loanAmount:60000, totalCrTillNow:35000, thisMonthShare:300, emiAmount:3000, lastMonthAdvance:0, totalCrThisMonth:3300, status:'online', notReceivedThisMonth:0, totalAdvanceThisMonth:0 },
+                        { id:19, srNo:19, name:'User 19', loanEmiNo:'7', loanIssueDate:'2026-02-12', loanAmount:60000, totalCrTillNow:35000, thisMonthShare:300, emiAmount:3000, lastMonthAdvance:0, totalCrThisMonth:3300, status:'online', notReceivedThisMonth:0, totalAdvanceThisMonth:0 },
+                        { id:20, srNo:20, name:'User 20', loanEmiNo:'6', loanIssueDate:'2026-03-12', loanAmount:60000, totalCrTillNow:35000, thisMonthShare:300, emiAmount:3000, lastMonthAdvance:0, totalCrThisMonth:3300, status:'online', notReceivedThisMonth:0, totalAdvanceThisMonth:0 },
+                        { id:21, srNo:21, name:'User 21', loanEmiNo:'5', loanIssueDate:'2026-04-12', loanAmount:60000, totalCrTillNow:35000, thisMonthShare:300, emiAmount:3000, lastMonthAdvance:0, totalCrThisMonth:3300, status:'online', notReceivedThisMonth:0, totalAdvanceThisMonth:0 },
+                        { id:22, srNo:22, name:'User 22', loanEmiNo:'4', loanIssueDate:'2026-05-12', loanAmount:60000, totalCrTillNow:35000, thisMonthShare:300, emiAmount:3000, lastMonthAdvance:0, totalCrThisMonth:3300, status:'online', notReceivedThisMonth:0, totalAdvanceThisMonth:0 }
+                    ],
+                    
+                    summary: {
+                        loanIssued: 'User 4 and amount 80000 (amount provided 30000 online + 50000 offline)',
+                        advances: [
+                            { name: 'User 7', amount: 13000 },
+                            { name: 'User 9', amount: 5000 },
+                            { name: 'User 11', amount: 15000 },
+                            { name: 'User 17', amount: 9400 }
+                        ],
+                        totalAdvance: 42400
+                    }
+                }
+            },
+            computed: {
+                totalCollectSum() {
+                    return this.ledger.reduce((sum, row) => sum + Number(row.totalCrThisMonth || 0), 0);
+                },
+                totalCrTillNowSum() {
+                    return this.ledger.reduce((sum, row) => sum + Number(row.totalCrTillNow || 0), 0);
                 }
             },
             methods: {
                 login() {
                     if (this.loginData.mobile === 'admin' && this.loginData.password === 'admin123') {
-                        this.user = { name: 'Admin Manager', role: 'admin' }
-                    } else if (this.loginData.mobile === '9876543210' && this.loginData.password === 'user123') {
-                        this.user = { name: 'Regular Member', role: 'user' }
+                        this.user = { name: 'Admin Account', role: 'admin' }
                     } else {
-                        alert('Invalid credentials! Please use admin/admin123 or 9876543210/user123')
+                        alert('Invalid! Use admin / admin123')
                     }
+                },
+                generateNextMonth() {
+                    if(!confirm("Are you sure you want to finalize this sheet and generate the next month's sheet?")) return;
+                    
+                    this.meetingNo++;
+                    this.meetingMonth = 'Oct 2026';
+                    this.meetingDate = '15/10/2026';
+                    
+                    this.ledger = this.ledger.map(row => {
+                        let nextEmi = row.loanEmiNo;
+                        let emiAmt = row.emiAmount;
+                        
+                        // Increment EMI for those actively paying
+                        if (nextEmi !== 'N/A' && nextEmi !== '') {
+                            nextEmi = parseInt(nextEmi) + 1;
+                        } else if (row.name === 'User 4') { 
+                            // New loan recipient starts EMI 1 next month
+                            nextEmi = '1';
+                            emiAmt = 3700; 
+                        }
+                        
+                        // Carry forward their pending advance (Bakaya) to next month's expectation
+                        let pendingDues = row.totalAdvanceThisMonth;
+                        
+                        return {
+                            ...row,
+                            loanEmiNo: nextEmi,
+                            emiAmount: emiAmt,
+                            totalCrTillNow: parseInt(row.totalCrTillNow) + parseInt(row.thisMonthShare),
+                            lastMonthAdvance: pendingDues,
+                            lastMonthAdvanceNote: pendingDues > 0 ? 'carried forward' : '',
+                            
+                            // Expected collection for next month: Share + EMI + Past Pending Dues
+                            totalCrThisMonth: 300 + (parseInt(emiAmt) || 0) + parseInt(pendingDues || 0),
+                            notReceivedThisMonth: 0,
+                            totalAdvanceThisMonth: 0,
+                            status: 'Pending' // Reset payment status
+                        }
+                    });
+                    
+                    // Clear the bottom summary for the new month
+                    this.summary = { loanIssued: 'None', advances: [], totalAdvance: 0 };
+                    alert("Next month's record (Samiti No. " + this.meetingNo + ") created successfully! Totals updated and dues carried forward.");
                 }
             }
         }).mount('#app')
