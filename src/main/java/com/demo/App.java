@@ -44,8 +44,16 @@ public class App {
     <style>
         body { background-color: #f8f9fa; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
         .table th { font-size: 0.75rem; vertical-align: middle; padding: 0.5rem; }
-        .table td { font-size: 0.85rem; vertical-align: middle; padding: 0.5rem; }
+        .table td { font-size: 0.85rem; vertical-align: middle; padding: 0.3rem; }
         .summary-card h6 { margin-bottom: 0.2rem; }
+        
+        /* Excel-like editable inputs */
+        .edit-input { 
+            width: 100%; border: 1px solid #ced4da; padding: 2px 4px; 
+            font-size: 0.85rem; border-radius: 3px; background-color: #fff; text-align: center;
+        }
+        .edit-input:focus { outline: 2px solid #0d6efd; border-color: transparent; background-color: #e9ecef;}
+        .edit-input.text-start { text-align: left; }
     </style>
 </head>
 <body>
@@ -80,9 +88,15 @@ public class App {
             <div class="d-flex justify-content-between align-items-center mb-3 bg-white p-3 rounded shadow-sm border border-secondary border-opacity-25">
                 <div>
                     <h3 class="mb-0 text-primary fw-bold">Samiti Management</h3>
-                    <div class="text-muted fw-bold mt-1">
-                        <span class="me-3">Month: <span class="text-dark">{{ meetingMonth }}</span></span>
-                        <span class="me-3">Date: <span class="text-dark">{{ meetingDate }}</span></span>
+                    <div class="text-muted fw-bold mt-1 d-flex align-items-center">
+                        <span class="me-2">Month:</span> 
+                        <input v-if="user.role === 'admin'" v-model="meetingMonth" class="edit-input w-auto me-3 fw-bold">
+                        <span v-else class="text-dark me-3">{{ meetingMonth }}</span>
+                        
+                        <span class="me-2">Date:</span>
+                        <input v-if="user.role === 'admin'" v-model="meetingDate" class="edit-input w-auto me-3 fw-bold">
+                        <span v-else class="text-dark me-3">{{ meetingDate }}</span>
+                        
                         <span>Samiti No. <span class="badge bg-danger fs-6">{{ meetingNo }}</span></span>
                     </div>
                 </div>
@@ -95,7 +109,7 @@ public class App {
             <!-- Main Ledger -->
             <div class="card shadow-sm mb-3 border-0">
                 <div class="card-header bg-dark text-white d-flex justify-content-between align-items-center py-2">
-                    <h5 class="mb-0">Collection & Distribution Sheet</h5>
+                    <h5 class="mb-0">Collection & Distribution Sheet <small v-if="user.role==='admin'" class="text-warning">(EDIT MODE ENABLED)</small></h5>
                     <div v-if="user.role === 'admin'">
                         <button @click="generateNextMonth" class="btn btn-sm btn-warning fw-bold text-dark me-2">Create Next Month Record ➡️</button>
                     </div>
@@ -122,22 +136,70 @@ public class App {
                         <tbody>
                             <tr v-for="row in ledger" :key="row.id">
                                 <td>{{ row.srNo }}</td>
-                                <td class="fw-bold text-start text-nowrap">{{ row.name }}</td>
-                                <td>{{ row.loanEmiNo }}</td>
-                                <td>{{ row.loanIssueDate }}</td>
-                                <td><span v-if="row.loanAmount > 0" class="text-danger fw-bold">{{ row.loanAmount }}</span></td>
-                                <td>{{ row.totalCrTillNow }}</td>
-                                <td>{{ row.thisMonthShare }}</td>
-                                <td><span v-if="row.emiAmount > 0" class="text-primary fw-bold">{{ row.emiAmount }}</span><span v-else-if="row.emiAmount==='N/A'">N/A</span></td>
-                                <td><span v-if="row.lastMonthAdvance > 0" class="text-success">{{ row.lastMonthAdvance }}<br><small v-if="row.lastMonthAdvanceNote" class="text-danger">({{row.lastMonthAdvanceNote}})</small></span></td>
-                                <td class="fw-bold bg-light text-dark fs-6">{{ row.totalCrThisMonth }}</td>
-                                <td>
-                                    <span v-if="row.status === 'online'" class="badge bg-success">Online</span>
-                                    <span v-else-if="row.status === 'offline'" class="badge bg-primary">Offline</span>
-                                    <span v-else class="badge bg-secondary">{{ row.status }}</span>
+                                
+                                <td class="fw-bold text-start text-nowrap">
+                                    <input v-if="user.role === 'admin'" v-model="row.name" class="edit-input text-start fw-bold">
+                                    <span v-else>{{ row.name }}</span>
                                 </td>
-                                <td><span v-if="row.notReceivedThisMonth > 0" class="text-danger fw-bold">{{ row.notReceivedThisMonth }}</span></td>
-                                <td><span v-if="row.totalAdvanceThisMonth > 0" class="text-danger fw-bold">{{ row.totalAdvanceThisMonth }}</span></td>
+                                
+                                <td>
+                                    <input v-if="user.role === 'admin'" v-model="row.loanEmiNo" class="edit-input">
+                                    <span v-else>{{ row.loanEmiNo }}</span>
+                                </td>
+                                
+                                <td>
+                                    <input v-if="user.role === 'admin'" v-model="row.loanIssueDate" class="edit-input">
+                                    <span v-else>{{ row.loanIssueDate }}</span>
+                                </td>
+                                
+                                <td>
+                                    <input v-if="user.role === 'admin'" v-model="row.loanAmount" class="edit-input text-danger fw-bold">
+                                    <span v-else-if="row.loanAmount > 0" class="text-danger fw-bold">{{ row.loanAmount }}</span>
+                                </td>
+                                
+                                <td>
+                                    <input v-if="user.role === 'admin'" v-model="row.totalCrTillNow" class="edit-input">
+                                    <span v-else>{{ row.totalCrTillNow }}</span>
+                                </td>
+                                
+                                <td>
+                                    <input v-if="user.role === 'admin'" v-model="row.thisMonthShare" @input="recalcRow(row)" class="edit-input">
+                                    <span v-else>{{ row.thisMonthShare }}</span>
+                                </td>
+                                
+                                <td>
+                                    <input v-if="user.role === 'admin'" v-model="row.emiAmount" @input="recalcRow(row)" class="edit-input text-primary fw-bold">
+                                    <span v-else-if="row.emiAmount > 0" class="text-primary fw-bold">{{ row.emiAmount }}</span><span v-else-if="row.emiAmount==='N/A'">N/A</span>
+                                </td>
+                                
+                                <td>
+                                    <input v-if="user.role === 'admin'" v-model="row.lastMonthAdvance" @input="recalcRow(row)" class="edit-input text-success">
+                                    <span v-else-if="row.lastMonthAdvance > 0" class="text-success">{{ row.lastMonthAdvance }}</span>
+                                </td>
+                                
+                                <td class="bg-light">
+                                    <input v-if="user.role === 'admin'" v-model="row.totalCrThisMonth" class="edit-input fw-bold bg-white text-dark fs-6">
+                                    <span v-else class="fw-bold text-dark fs-6">{{ row.totalCrThisMonth }}</span>
+                                </td>
+                                
+                                <td>
+                                    <select v-if="user.role === 'admin'" v-model="row.status" class="edit-input">
+                                        <option value="online">Online</option>
+                                        <option value="offline">Offline</option>
+                                        <option value="Pending">Pending</option>
+                                    </select>
+                                    <span v-else :class="row.status === 'online' ? 'badge bg-success' : (row.status === 'offline' ? 'badge bg-primary' : 'badge bg-secondary')">{{ row.status }}</span>
+                                </td>
+                                
+                                <td>
+                                    <input v-if="user.role === 'admin'" v-model="row.notReceivedThisMonth" @input="recalcRow(row)" class="edit-input text-danger fw-bold">
+                                    <span v-else-if="row.notReceivedThisMonth > 0" class="text-danger fw-bold">{{ row.notReceivedThisMonth }}</span>
+                                </td>
+                                
+                                <td>
+                                    <input v-if="user.role === 'admin'" v-model="row.totalAdvanceThisMonth" class="edit-input text-danger fw-bold">
+                                    <span v-else-if="row.totalAdvanceThisMonth > 0" class="text-danger fw-bold">{{ row.totalAdvanceThisMonth }}</span>
+                                </td>
                             </tr>
                         </tbody>
                         <tfoot class="table-dark fw-bold">
@@ -159,22 +221,27 @@ public class App {
             <div class="row">
                 <div class="col-md-12">
                     <div class="card shadow-sm border-0 border-start border-4 border-warning summary-card">
-                        <div class="card-body bg-light py-2">
-                            <h6 class="fw-bold text-primary mb-2">Meeting Notes & Summary</h6>
+                        <div class="card-header bg-light py-2 d-flex justify-content-between align-items-center">
+                            <h6 class="fw-bold text-primary mb-0">Meeting Notes & Summary</h6>
+                        </div>
+                        <div class="card-body bg-white py-3">
                             <div class="row">
                                 <div class="col-md-5 border-end">
                                     <p class="mb-1 text-muted fw-bold">Note 1: Loan Issued This Month</p>
-                                    <h6>{{ summary.loanIssued }}</h6>
+                                    <textarea v-if="user.role === 'admin'" v-model="summary.loanIssued" class="form-control form-control-sm" rows="3"></textarea>
+                                    <h6 v-else class="fw-bold">{{ summary.loanIssued }}</h6>
                                 </div>
                                 <div class="col-md-7">
                                     <p class="mb-1 text-muted fw-bold">Note 2: Advance Given</p>
-                                    <div class="row">
-                                        <div class="col-md-6" v-for="adv in summary.advances">
-                                            <h6>{{ adv.name }}: <span class="text-danger">₹{{ adv.amount }}</span></h6>
-                                        </div>
+                                    <textarea v-if="user.role === 'admin'" v-model="summary.advancesText" class="form-control form-control-sm mb-2" rows="2"></textarea>
+                                    <h6 v-else class="fw-bold" style="white-space: pre-wrap;">{{ summary.advancesText }}</h6>
+                                    
+                                    <hr class="my-2">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="fw-bold">Total Advance Given:</span>
+                                        <input v-if="user.role === 'admin'" v-model="summary.totalAdvance" class="edit-input w-25 fw-bold text-end">
+                                        <h6 v-else class="fw-bold mb-0">₹{{ summary.totalAdvance }}</h6>
                                     </div>
-                                    <hr class="my-1">
-                                    <h6 class="text-end fw-bold">Total Advance Given: ₹{{ summary.totalAdvance }}</h6>
                                 </div>
                             </div>
                         </div>
@@ -213,7 +280,7 @@ public class App {
                         { id:13, srNo:13, name:'User 13', loanEmiNo:'13', loanIssueDate:'2025-08-12', loanAmount:60000, totalCrTillNow:35000, thisMonthShare:300, emiAmount:3000, lastMonthAdvance:0, totalCrThisMonth:3300, status:'online', notReceivedThisMonth:0, totalAdvanceThisMonth:0 },
                         { id:14, srNo:14, name:'User 14', loanEmiNo:'12', loanIssueDate:'2025-09-12', loanAmount:60000, totalCrTillNow:35000, thisMonthShare:300, emiAmount:3000, lastMonthAdvance:10000, totalCrThisMonth:13300, status:'online', notReceivedThisMonth:0, totalAdvanceThisMonth:0 },
                         { id:15, srNo:15, name:'User 15', loanEmiNo:'11', loanIssueDate:'2025-10-12', loanAmount:60000, totalCrTillNow:35000, thisMonthShare:300, emiAmount:3000, lastMonthAdvance:0, totalCrThisMonth:3300, status:'online', notReceivedThisMonth:0, totalAdvanceThisMonth:0 },
-                        { id:16, srNo:16, name:'User 16', loanEmiNo:'10', loanIssueDate:'2025-11-12', loanAmount:60000, totalCrTillNow:35000, thisMonthShare:300, emiAmount:3000, lastMonthAdvance:15000, lastMonthAdvanceNote: 'not received', totalCrThisMonth:3300, status:'online', notReceivedThisMonth:15000, totalAdvanceThisMonth:15000 },
+                        { id:16, srNo:16, name:'User 16', loanEmiNo:'10', loanIssueDate:'2025-11-12', loanAmount:60000, totalCrTillNow:35000, thisMonthShare:300, emiAmount:3000, lastMonthAdvance:0, totalCrThisMonth:3300, status:'online', notReceivedThisMonth:15000, totalAdvanceThisMonth:15000 },
                         { id:17, srNo:17, name:'User 17', loanEmiNo:'9', loanIssueDate:'2025-12-12', loanAmount:60000, totalCrTillNow:35000, thisMonthShare:300, emiAmount:3000, lastMonthAdvance:0, totalCrThisMonth:3300, status:'online', notReceivedThisMonth:0, totalAdvanceThisMonth:0 },
                         { id:18, srNo:18, name:'User 18', loanEmiNo:'8', loanIssueDate:'2026-01-12', loanAmount:60000, totalCrTillNow:35000, thisMonthShare:300, emiAmount:3000, lastMonthAdvance:0, totalCrThisMonth:3300, status:'online', notReceivedThisMonth:0, totalAdvanceThisMonth:0 },
                         { id:19, srNo:19, name:'User 19', loanEmiNo:'7', loanIssueDate:'2026-02-12', loanAmount:60000, totalCrTillNow:35000, thisMonthShare:300, emiAmount:3000, lastMonthAdvance:0, totalCrThisMonth:3300, status:'online', notReceivedThisMonth:0, totalAdvanceThisMonth:0 },
@@ -224,12 +291,7 @@ public class App {
                     
                     summary: {
                         loanIssued: 'User 4 and amount 80000 (amount provided 30000 online + 50000 offline)',
-                        advances: [
-                            { name: 'User 7', amount: 13000 },
-                            { name: 'User 9', amount: 5000 },
-                            { name: 'User 11', amount: 15000 },
-                            { name: 'User 17', amount: 9400 }
-                        ],
+                        advancesText: 'User 7: 13000\\nUser 9: 5000\\nUser 11: 15000\\nUser 17: 9400',
                         totalAdvance: 42400
                     }
                 }
@@ -246,14 +308,25 @@ public class App {
                 login() {
                     if (this.loginData.mobile === 'admin' && this.loginData.password === 'admin123') {
                         this.user = { name: 'Admin Account', role: 'admin' }
+                    } else if (this.loginData.mobile === '9876543210' && this.loginData.password === 'user123') {
+                        this.user = { name: 'Regular Member', role: 'user' }
                     } else {
                         alert('Invalid! Use admin / admin123')
                     }
+                },
+                recalcRow(row) {
+                    // Auto-calculate Total Cr this month when Admin edits values
+                    let share = Number(row.thisMonthShare) || 0;
+                    let emi = row.emiAmount === 'N/A' ? 0 : (Number(row.emiAmount) || 0);
+                    let advance = Number(row.lastMonthAdvance) || 0;
+                    let notRecv = Number(row.notReceivedThisMonth) || 0;
+                    row.totalCrThisMonth = (share + emi + advance) - notRecv;
                 },
                 generateNextMonth() {
                     if(!confirm("Are you sure you want to finalize this sheet and generate the next month's sheet?")) return;
                     
                     this.meetingNo++;
+                    // Advance Date strings dynamically for simple UI
                     this.meetingMonth = 'Oct 2026';
                     this.meetingDate = '15/10/2026';
                     
@@ -261,37 +334,30 @@ public class App {
                         let nextEmi = row.loanEmiNo;
                         let emiAmt = row.emiAmount;
                         
-                        // Increment EMI for those actively paying
                         if (nextEmi !== 'N/A' && nextEmi !== '') {
                             nextEmi = parseInt(nextEmi) + 1;
-                        } else if (row.name === 'User 4') { 
-                            // New loan recipient starts EMI 1 next month
-                            nextEmi = '1';
-                            emiAmt = 3700; 
                         }
                         
-                        // Carry forward their pending advance (Bakaya) to next month's expectation
                         let pendingDues = row.totalAdvanceThisMonth;
+                        let newShare = parseInt(row.thisMonthShare) || 0;
                         
                         return {
                             ...row,
                             loanEmiNo: nextEmi,
                             emiAmount: emiAmt,
-                            totalCrTillNow: parseInt(row.totalCrTillNow) + parseInt(row.thisMonthShare),
-                            lastMonthAdvance: pendingDues,
-                            lastMonthAdvanceNote: pendingDues > 0 ? 'carried forward' : '',
+                            totalCrTillNow: parseInt(row.totalCrTillNow) + newShare,
+                            lastMonthAdvance: pendingDues, // Old pending becomes expected advance
                             
-                            // Expected collection for next month: Share + EMI + Past Pending Dues
-                            totalCrThisMonth: 300 + (parseInt(emiAmt) || 0) + parseInt(pendingDues || 0),
+                            // Expected collection for next month
+                            totalCrThisMonth: newShare + (parseInt(emiAmt) || 0) + parseInt(pendingDues || 0),
                             notReceivedThisMonth: 0,
                             totalAdvanceThisMonth: 0,
-                            status: 'Pending' // Reset payment status
+                            status: 'Pending'
                         }
                     });
                     
-                    // Clear the bottom summary for the new month
-                    this.summary = { loanIssued: 'None', advances: [], totalAdvance: 0 };
-                    alert("Next month's record (Samiti No. " + this.meetingNo + ") created successfully! Totals updated and dues carried forward.");
+                    this.summary = { loanIssued: '', advancesText: '', totalAdvance: 0 };
+                    alert("Next month's record created successfully! You can now freely edit any value.");
                 }
             }
         }).mount('#app')
